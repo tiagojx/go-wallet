@@ -1,0 +1,16 @@
+CREATE TABLE IF NOT EXISTS accounts (
+	id SERIAL PRIMARY KEY,
+	name VARCHAR(100) NOT NULL,
+	balance BIGINT NOT NULL DEFAULT 0,
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS transactions (
+	id SERIAL PRIMARY KEY,
+	account_id_from INT NOT NULL,
+	account_id_to INT NOT NULL,
+	amount BIGINT NOT NULL,
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	FOREIGN KEY (account_id_from) REFERENCES accounts(id),
+	FOREIGN KEY (account_id_to) REFERENCES accounts(id)
+);

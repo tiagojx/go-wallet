@@ -6,12 +6,12 @@ import (
 	"os"
 
 	"github.com/joho/godotenv"
-	_ "github.com/lib/pq"	// importação implícita do driver postgres.
+	_ "github.com/lib/pq" // importação implícita do driver postgres.
 )
 
-/* Tenta criar uma nova conexão. Se bem sucedido retornará o ponteiro 
+/* Tenta criar uma nova conexão. Se bem sucedido retornará o ponteiro
  * da conexão com o banco de dados, senão retornará um erro à main.
-*/
+ */
 func NewConnection() (*sql.DB, error) {
 	_ = godotenv.Load()
 
@@ -26,11 +26,11 @@ func NewConnection() (*sql.DB, error) {
 
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
-		return nil, fmt.Errorf("error opening the database config: %v", err)
+		return nil, fmt.Errorf("error opening database configuration: %v", err)
 	}
 
 	if err := db.Ping(); err != nil {
-		return nil, fmt.Errorf("error connecting to database (ping): %v", err)
+		return nil, fmt.Errorf("error connecting to the database: %v", err)
 	}
 
 	return db, nil

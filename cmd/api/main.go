@@ -1,11 +1,10 @@
 package main
 
 import (
-	"net/http"
 	"os"
 
-	"github.com/gorilla/mux"
 	"github.com/tiagojx/go-wallet/internal/account"
+	"github.com/tiagojx/go-wallet/internal/api"
 	"github.com/tiagojx/go-wallet/internal/database"
 	"github.com/tiagojx/go-wallet/internal/handlers"
 	"github.com/tiagojx/go-wallet/internal/middleware"
@@ -50,15 +49,9 @@ func main() {
 	/*
 	 * Server
 	 */
-
-	r := mux.NewRouter()
-	r.Use(middleware.Logging)
-	r.HandleFunc("/accounts", accHandler.CreateAccount).Methods("POST")
-	r.HandleFunc("/transactions", txHandler.CreateTransaction).Methods("POST")
-
-	logger.Info("Running local server on http://localhost:8080/")
-	if err = http.ListenAndServe(":8080", r); err != nil {
-		logger.Error("error when starting server", "error", err)
+	server := api.NewServer(txHandler, accHandler, logger)
+	if err = server.Run("8080"); err != nil {
+		logger.Info("error starting server", "error", err)
 		os.Exit(1)
 	}
 }

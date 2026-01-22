@@ -24,12 +24,20 @@ func NewServer(th *handlers.TransactionHandler, ah *handlers.AccountHandler, log
 		Logger:             logger,
 	}
 
+	// chama a função implementada em Server.
 	s.routes()
 	return s
 }
 
 func (s *Server) routes() {
-	s.Router.Use(middleware.Logging)
+	// registrando middlewares.
+	s.Router.Use(middleware.Logging) // logs em JSON
+	s.Router.Use(func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			next.ServeHTTP(w, r)
+		})
+	})
 
 	// Endpoints
 	s.Router.HandleFunc("/accounts", s.AccountHandler.CreateAccount).Methods("POST")

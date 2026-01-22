@@ -1,52 +1,64 @@
 package main
 
 import (
-	"fmt"
-	"log"
+	"net/http"
+	"os"
 
+	"github.com/gorilla/mux"
 	"github.com/tiagojx/go-wallet/internal/account"
 	"github.com/tiagojx/go-wallet/internal/database"
+	"github.com/tiagojx/go-wallet/internal/handlers"
+	"github.com/tiagojx/go-wallet/internal/middleware"
 	"github.com/tiagojx/go-wallet/internal/transaction"
 )
 
 func main() {
+	/*
+	 * Iniciando o middleware...
+	 */
+
+	logger := middleware.InitLogger()
+	logger.Info("starting go-wallet API...")
+
+	/*
+	 * Conectando ao banco de dados...
+	 */
+
 	db, err := database.NewConnection()
 	if err != nil {
-		log.Panic(err)
+		logger.Info("error connecting to the database", "error", err)
+		os.Exit(1)
 	}
 	defer db.Close()
 
-	fmt.Println("----------------------------------")
-	fmt.Println("Go is now connected to PostgreSQL!")
-	fmt.Println("----------------------------------")
+	logger.Info("Go is now connected to PostgreSQL!")
 
 	/*
-	 * APENAS PARA FINS DE TESTES
+	 * Inicializando repositórios...
 	 */
 
-	// inicializando repositórios...
 	accRepo := account.NewRepository(db)
 	txRepo := transaction.NewRepository(db)
 
-	// Criando contas...
-	newAcc := account.NewAccount("Maria")
+	/*
+	 * Registrando handlers...
+	 */
 
-	if err = accRepo.Save(newAcc); err != nil {
-		log.Fatal(err)
+	accHandler := handlers.NewAccountHandler(accRepo)
+	txHandler := handlers.NewTransactionHandler(txRepo)
+
+	/*
+	 * Server
+	 */
+
+	r := mux.NewRouter()
+	r.Use(middleware.Logging)
+	r.HandleFunc("/accounts", accHandler.CreateAccount).Methods("POST")
+	r.HandleFunc("/transactions", txHandler.CreateTransaction).Methods("POST")
+
+	logger.Info("Running local server on http://localhost:8080/")
+	if err = http.ListenAndServe(":8080", r); err != nil {
+		logger.Error("error when starting server", "error", err)
+		os.Exit(1)
 	}
-	fmt.Printf("New account successfully created!\nID: %d | Name: %s | Balance: %d\n",
-		newAcc.ID,
-		newAcc.Name,
-		newAcc.Balance)
-
-	// Processando transações...
-	newTx := transaction.NewTransaction(1, 2, 1000)
-
-	if err = txRepo.Create(newTx); err != nil {
-		log.Fatal(err)
-	}
-	fmt.Printf("Your transaction was successfully created!\nSender: %d | Destination: %d | Amount: %d\n",
-		newTx.AccountIdFrom,
-		newTx.AccountIdTo,
-		newTx.Amount)
 }

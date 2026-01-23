@@ -7,7 +7,7 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
     ports:
-      - "${DB_PORT}:${DB_PORT}"
+      - "${DB_PORT}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./sql/init.sql:/docker-entrypoint-initdb.d/init.sql
@@ -16,8 +16,8 @@ services:
     image: rabbitmq:3-management-alpine
     container_name: wallet-mq
     ports:
-      - "${MQ_PORT_GO}:${MQ_PORT_GO}" # Backend
-      - "${MQ_PORT_DASHBOARD}:${MQ_PORT_DASHBOARD}" # Dashboard
+      - "${MQ_PORT_GO}:5672" # Backend
+      - "${MQ_PORT_DASHBOARD}:15672" # Dashboard
     environment:
       RABBITMQ_DEFAULT_USER: ${MQ_USER}
       RABBITMQ_DEFAULT_PASSWORD: ${MQ_PASSWORD}

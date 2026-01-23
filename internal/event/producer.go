@@ -2,13 +2,14 @@ package event
 
 import (
 	"context"
-	"fmt"
-	"os"
 	"time"
 
-	"github.com/joho/godotenv"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
+
+type ProducerInterface interface {
+	Publish(msg []byte) error
+}
 
 type Producer struct {
 	conn      *amqp.Connection
@@ -16,15 +17,8 @@ type Producer struct {
 	queueName string
 }
 
-func NewProducer(queueName string) (*Producer, error) {
+func NewProducer(connStr string, queueName string) (*Producer, error) {
 	// conexão com o RabbitMQ.
-	_ = godotenv.Load()
-	connStr := fmt.Sprintf("amqp://%s:%s@%s:%s/",
-		os.Getenv("MQ_USER"),
-		os.Getenv("MQ_PASSWORD"),
-		os.Getenv("MQ_HOST"),
-		os.Getenv("MQ_PORT"),
-	)
 	conn, err := amqp.Dial(connStr)
 	if err != nil {
 		return nil, err

@@ -5,14 +5,17 @@ import (
 	"net/http"
 
 	"github.com/tiagojx/go-wallet/internal/transaction"
+	"github.com/tiagojx/go-wallet/internal/usecase"
 )
 
 type TransactionHandler struct {
-	repo *transaction.Repository
+	txUsecase *usecase.TransactionUseCase
 }
 
-func NewTransactionHandler(repo *transaction.Repository) *TransactionHandler {
-	return &TransactionHandler{repo: repo}
+func NewTransactionHandler(txUsecase *usecase.TransactionUseCase) *TransactionHandler {
+	return &TransactionHandler{
+		txUsecase: txUsecase,
+	}
 }
 
 func (h *TransactionHandler) CreateTransaction(w http.ResponseWriter, r *http.Request) {
@@ -31,7 +34,7 @@ func (h *TransactionHandler) CreateTransaction(w http.ResponseWriter, r *http.Re
 	}
 
 	// criando transação...
-	if err = h.repo.Create(tx); err != nil {
+	if err = h.txUsecase.Execute(tx); err != nil {
 		http.Error(w, "error processing transaction", http.StatusInternalServerError)
 		return
 	}
